@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工时计算工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .results-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .result-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4facfe;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .result-item p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .worktime-highlight {
+            color: #4facfe;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .summary h2 {
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #1976d2;
+            margin-bottom: 20px;
+        }
+
+        .example {
+            background: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .example h3 {
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+
+        .example pre {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ 工时计算工具</h1>
+            <p>自动检测打卡时间，计算平均工时</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <h2>📝 输入打卡记录</h2>
+                <div class="info">
+                    <strong>使用说明：</strong>请在下方文本框中输入包含"打卡时间"的记录，系统将自动识别日期和时间格式。
+                </div>
+
+                <div class="example">
+                    <h3>📋 输入格式示例：</h3>
+                    <pre>2024年1月15日 打卡时间：09:00
+2024年1月15日 打卡时间：18:30
+2024年1月16日 打卡时间：08:45
+2024年1月16日 打卡时间：17:30</pre>
+                </div>
+
+                <div class="input-group">
+                    <label for="timeRecords">打卡记录：</label>
+                    <textarea id="timeRecords" placeholder="请在此输入打卡记录，每行一条记录..."></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="calculateWorkTime()">🚀 计算工时</button>
+                    <button class="btn btn-secondary" onclick="clearData()">🗑️ 清空数据</button>
+                </div>
+            </div>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h2>📊 计算结果</h2>
+                <div id="resultsContent"></div>
+            </div>
+
+            <div id="summary" class="summary" style="display: none;">
+                <h2>📈 工时统计</h2>
+                <div id="summaryContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 时间解析函数
+        function parseTimeFromText(text) {
+            const timePatterns = [
+                // 匹配 "打卡时间：HH:MM" 格式
+                /打卡时间[：:]\s*(\d{1,2}):(\d{2})/g,
+                // 匹配 "HH:MM" 格式
+                /(\d{1,2}):(\d{2})/g
+            ];
+
+            const datePatterns = [
+                // 匹配 "YYYY年MM月DD日" 格式
+                /(\d{4})年(\d{1,2})月(\d{1,2})日/g,
+                // 匹配 "YYYY-MM-DD" 格式
+                /(\d{4})-(\d{1,2})-(\d{1,2})/g,
+                // 匹配 "YYYY/MM/DD" 格式
+                /(\d{4})\/(\d{1,2})\/(\d{1,2})/g
+            ];
+
+            const records = [];
+            const lines = text.split('\n');
+
+            lines.forEach((line, lineIndex) => {
+                if (!line.trim()) return;
+
+                // 查找日期
+                let date = null;
+                for (const pattern of datePatterns) {
+                    const match = pattern.exec(line);
+                    if (match) {
+                        const year = parseInt(match[1]);
+                        const month = parseInt(match[2]) - 1; // 月份从0开始
+                        const day = parseInt(match[3]);
+                        date = new Date(year, month, day);
+                        break;
+                    }
+                }
+
+                // 如果没有找到日期，使用当前日期
+                if (!date) {
+                    date = new Date();
+                }
+
+                // 查找时间
+                for (const pattern of timePatterns) {
+                    const matches = [...line.matchAll(pattern)];
+                    matches.forEach(match => {
+                        const hour = parseInt(match[1]);
+                        const minute = parseInt(match[2]);
+
+                        // 验证时间有效性
+                        if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                            const timeRecord = new Date(date);
+                            timeRecord.setHours(hour, minute, 0, 0);
+                            records.push({
+                                date: date.toDateString(),
+                                time: timeRecord,
+                                originalLine: line.trim(),
+                                lineNumber: lineIndex + 1
+                            });
+                        }
+                    });
+                }
+            });
+
+            return records;
+        }
+
+        // 计算工时
+        function calculateWorkTime() {
+            const text = document.getElementById('timeRecords').value.trim();
+
+            if (!text) {
+                showError('请输入打卡记录！');
+                return;
+            }
+
+            const records = parseTimeFromText(text);
+
+            if (records.length === 0) {
+                showError('未找到有效的打卡时间记录！请检查输入格式。');
+                return;
+            }
+
+            // 按日期分组
+            const dailyRecords = {};
+            records.forEach(record => {
+                if (!dailyRecords[record.date]) {
+                    dailyRecords[record.date] = [];
+                }
+                dailyRecords[record.date].push(record);
+            });
+
+            // 计算每日工时
+            const dailyWorkTimes = [];
+            let totalWorkTime = 0;
+            let validDays = 0;
+
+            Object.keys(dailyRecords).forEach(date => {
+                const dayRecords = dailyRecords[date].sort((a, b) => a.time - b.time);
+
+                if (dayRecords.length >= 2) {
+                    // 计算工作时间（最后一次打卡 - 第一次打卡 - 1.5小时休息时间）
+                    const firstTime = dayRecords[0].time;
+                    const lastTime = dayRecords[dayRecords.length - 1].time;
+                    const workTimeMs = lastTime - firstTime // - (1.5 * 60 * 60 * 1000); // 减去1.5小时
+
+                    if (workTimeMs > 0) {
+                        const workTimeHours = workTimeMs / (1000 * 60 * 60);
+                        dailyWorkTimes.push({
+                            date: date,
+                            workTime: workTimeHours,
+                            firstTime: firstTime,
+                            lastTime: lastTime,
+                            records: dayRecords
+                        });
+                        totalWorkTime += workTimeHours;
+                        validDays++;
+                    }
+                }
+            });
+
+            // 显示结果
+            displayResults(dailyWorkTimes, totalWorkTime, validDays, records);
+        }
+
+        // 显示结果
+        function displayResults(dailyWorkTimes, totalWorkTime, validDays, allRecords) {
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            const summaryDiv = document.getElementById('summary');
+            const summaryContent = document.getElementById('summaryContent');
+
+            // 显示详细结果
+            let resultsHTML = '';
+
+            if (dailyWorkTimes.length === 0) {
+                resultsHTML = '<div class="error">未找到有效的工时数据。请确保每天至少有两个打卡记录。</div>';
+            } else {
+                dailyWorkTimes.forEach(day => {
+                    resultsHTML += `
+                        <div class="result-item">
+                            <h3>📅 ${day.date}</h3>
+                            <p><strong>上班时间：</strong>${day.firstTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p><strong>下班时间：</strong>${day.lastTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p><strong>当日工时：</strong><span class="worktime-highlight">${day.workTime.toFixed(2)} 小时</span></p>
+                        </div>
+                    `;
+                });
+            }
+
+            resultsContent.innerHTML = resultsHTML;
+            resultsDiv.style.display = 'block';
+
+            // 显示统计摘要
+            if (validDays > 0) {
+                const averageWorkTime = totalWorkTime / validDays;
+                summaryContent.innerHTML = `
+                    <div class="summary-value">${averageWorkTime.toFixed(2)} 小时</div>
+                    <p>平均每日工时</p>
+                    <div style="margin-top: 20px;">
+                        <p><strong>总工时：</strong>${totalWorkTime.toFixed(2)} 小时</p>
+                        <p><strong>有效天数：</strong>${validDays} 天</p>
+                        <p><strong>总记录数：</strong>${allRecords.length} 条</p>
+                    </div>
+                `;
+                summaryDiv.style.display = 'block';
+            } else {
+                summaryDiv.style.display = 'none';
+            }
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            const summaryDiv = document.getElementById('summary');
+
+            resultsContent.innerHTML = `<div class="error">${message}</div>`;
+            resultsDiv.style.display = 'block';
+            summaryDiv.style.display = 'none';
+        }
+
+        // 清空数据
+        function clearData() {
+            document.getElementById('timeRecords').value = '';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('summary').style.display = 'none';
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 添加示例数据
+            const exampleData = `2024年1月15日 打卡时间：09:00
+2024年1月15日 打卡时间：18:30
+2024年1月16日 打卡时间：08:45
+2024年1月16日 打卡时间：17:30
+2024年1月17日 打卡时间：09:15
+2024年1月17日 打卡时间：18:45`;
+
+            document.getElementById('timeRecords').placeholder = exampleData;
+        });
+    </script>
+</body>
+
+</html>
